@@ -1,8 +1,10 @@
 # Data
 DATA/
+data/
 
 # Logs
 logs/
+
 *.log
 
 # Python
