@@ -1,0 +1,12 @@
+tensorflow
+pandas
+dvc
+notebook
+numpy
+matplotlib
+seaborn
+pyYAML
+tqdm
+ensure==7.0.0
+pyYAML
+types-PyYAML    
