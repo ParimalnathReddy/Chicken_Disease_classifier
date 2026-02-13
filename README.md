@@ -62,6 +62,20 @@ Comparison note:
 1. These numbers are not apples-to-apples because backbones differ (`efficientnet_b0` baseline vs `efficientnet_b3` MIL single).
 2. For fair comparison, backbone should be held constant; planned ablation: `b0 vs b0`.
 
+
+### Performance Visualizations
+
+We have generated detailed performance comparisons between the Baseline and the Optimized Patch MIL model.
+
+| **Validation Macro F1** | **NCD Class Recovery** |
+| :---: | :---: |
+| ![Macro F1](reports/figures/val_macro_f1.png) | ![NCD F1](reports/figures/val_ncd_f1.png) |
+| *Accurate F1 comparison over epochs.* | *Critical recovery of the minority NCD class.* |
+
+| **Training Loss** | **Validation Accuracy** |
+| :---: | :---: |
+| ![Loss](reports/figures/train_loss.png) | ![Accuracy](reports/figures/val_accuracy.png) |
+
 ## When
 
 ### When To Use Which Model
