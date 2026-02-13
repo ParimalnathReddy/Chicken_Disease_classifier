@@ -69,12 +69,12 @@ We have generated detailed performance comparisons between the Baseline and the 
 
 | **Validation Macro F1** | **NCD Class Recovery** |
 | :---: | :---: |
-| ![Macro F1](reports/figures/val_macro_f1.png) | ![NCD F1](reports/figures/val_ncd_f1.png) |
+| ![Macro F1](docs/assets/perf_val_macro_f1.png) | ![NCD F1](docs/assets/perf_val_ncd_f1.png) |
 | *Accurate F1 comparison over epochs.* | *Critical recovery of the minority NCD class.* |
 
 | **Training Loss** | **Validation Accuracy** |
 | :---: | :---: |
-| ![Loss](reports/figures/train_loss.png) | ![Accuracy](reports/figures/val_accuracy.png) |
+| ![Loss](docs/assets/perf_train_loss.png) | ![Accuracy](docs/assets/perf_val_accuracy.png) |
 
 ## When
 
