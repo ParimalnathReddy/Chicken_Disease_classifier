@@ -17,6 +17,14 @@ Why it matters:
 1. Faster disease detection can improve flock health decisions.
 2. The work compares accuracy vs interpretability tradeoffs in a practical setting.
 
+## Abstract
+
+This project studies poultry disease classification from field images (`cocci`, `healthy`, `ncd`, `salmo`).
+The pipeline includes ingestion/cleanup, train-val-test preprocessing, baseline and MIL training, and metric report export.
+Current best model is the single-image EfficientNet-B0 baseline (test accuracy `0.9836`, macro-F1 `0.9816`, NCD F1 `0.9730`).
+Patch MIL single and multi-image tracks are still experimental: MIL single lacks a full test-report export, and multi-image runs still have path/artifact stability issues.
+Limitation: this dataset is not truly longitudinal and does not contain reliable timestamps, so temporal conclusions are limited.
+
 ## Visual Snapshot
 
 ![Dataset class samples](docs/assets/class_samples_grid.jpg)
@@ -25,21 +33,11 @@ Why it matters:
 ![Model comparison](docs/assets/model_comparison.png)
 *Baseline vs Patch MIL single model scores from local experiment artifacts.*
 
-This repository compares two approaches for classifying poultry diseases:
-1. Global single-image classification.
-2. Patch-based multiple instance learning (MIL).
-
-Target classes are `cocci`, `healthy`, `ncd`, and `salmo`.
+This repository compares global single-image classification with patch-based multiple instance learning (MIL).
 
 ## Why
 
-Poultry disease screening needs models that are both accurate and reliable under class imbalance, especially for minority classes like `ncd`.
-
-This project exists to answer one practical question:
-
-Does a patch-attention MIL model outperform a strong global image classifier for this dataset?
-
-The short answer from current experiments is: no. The global baseline is stronger overall, but MIL improves local attention and can be useful when lesion localization matters.
+Poultry disease screening needs models that remain reliable under class imbalance, especially for minority classes like `ncd`. This project asks whether patch-attention MIL beats a strong global classifier on this dataset. Current answer: the global baseline is stronger, while MIL is more useful for localization signals.
 
 ## What
 
@@ -47,22 +45,22 @@ This codebase currently provides:
 1. Data ingestion with image validation and duplicate removal.
 2. Data preprocessing into single-image splits and multi-image windows.
 3. Baseline training (EfficientNet-B0 on full images).
-4. Patch MIL training for single-image bags and multi-image windows.
+4. Patch MIL training scripts (single-image active, multi-image experimental).
 5. JSON reports and model artifacts for reproducible experiments.
 
 ### Current Results Snapshot (Local Artifacts)
 
-Numbers below come from local files in this workspace:
-1. `reports/baseline_test_report.json`
-2. `reports/baseline_val_report.json`
-3. `reports/patch_mil_single_epoch_metrics.json`
-4. `logs/patch_mil_single_1486170.out` (February 12, 2026)
+Numbers below come from local artifacts (`reports/*.json`) and `logs/patch_mil_single_1486170.out` (February 12, 2026).
 
 | Model | Best Validation | Test | Notes |
 | --- | --- | --- | --- |
 | Baseline single (`efficientnet_b0`) | Macro-F1 `0.9901` | Accuracy `0.9836`, Macro-F1 `0.9816`, NCD F1 `0.9730` | Best overall performer in this repo. |
 | Patch MIL single (`efficientnet_b3`) | Macro-F1 `0.7425` (epoch 30) | No dedicated test export in current training script | NCD F1 improved from `0.0` early to `0.6119` (epoch 50). |
-| Patch MIL multi | No completed metrics artifact | No completed metrics artifact | Experimental path; earlier runs show data path issues in logs. |
+| Patch MIL multi | No completed metrics artifact | No completed metrics artifact | Experimental path with known path/artifact issues; not production-ready. |
+
+Comparison note:
+1. These numbers are not apples-to-apples because backbones differ (`efficientnet_b0` baseline vs `efficientnet_b3` MIL single).
+2. For fair comparison, backbone should be held constant; planned ablation: `b0 vs b0`.
 
 ## When
 
@@ -70,9 +68,9 @@ Numbers below come from local files in this workspace:
 
 | Situation | Recommended Path |
 | --- | --- |
-| You need highest production accuracy now | Baseline single (`stage_03_train_single.py`) |
-| You need patch-level attention and interpretability signals | Patch MIL single (`stage_04b_train_patch_mil_single.py`) |
-| You need one prediction from a window of images | Patch MIL multi (`stage_04c_train_patch_mil_multi.py`, experimental) |
+| You need highest production accuracy now | Baseline single (`stage_03_train_single.py`) - recommended. |
+| You need localization/interpretability signals and accept lower accuracy | Patch MIL single (`stage_04b_train_patch_mil_single.py`). |
+| You need multi-image MIL | Patch MIL multi (`stage_04c_train_patch_mil_multi.py`) is experimental; avoid production use for now. |
 
 ### When To Rerun Pipeline Stages
 
@@ -107,14 +105,7 @@ Notes:
 
 ### 2) Configure Paths
 
-Edit `config/config.yaml` before running if your workspace is different from this machine.
-
-Current file uses absolute paths:
-1. `data.raw_dir`
-2. `data.interim_dir`
-3. `data.processed_dir`
-4. `artifacts.model_dir`
-5. `artifacts.reports_dir`
+Edit `config/config.yaml` before running, especially if your workspace path differs from this machine. This file controls `data.*` and `artifacts.*` directories.
 
 ### 3) Prepare Raw Data
 
@@ -246,9 +237,9 @@ Multi-image windows (`data/processed/multi`):
 8. `patience: 20`
 9. `mc_dropout_passes: 20`
 
-## Artifacts Produced
+## Reproducibility & Artifacts
 
-Typical outputs:
+Primary outputs:
 1. `models/baseline_single/model.pt`
 2. `models/baseline_single/class_map.json`
 3. `models/patch_mil_single/model.pt`
@@ -258,6 +249,10 @@ Typical outputs:
 7. `reports/baseline_epoch_metrics.json`
 8. `reports/patch_mil_single_epoch_metrics.json`
 9. `logs/*.out` and `logs/*.err`
+
+Reproducibility note:
+1. Metrics in this README are expected to be reproducible from saved JSON reports in `reports/`.
+2. Run logs in `logs/` are included for traceability of training behavior and failures.
 
 ## Troubleshooting
 
@@ -283,15 +278,27 @@ Current mitigations already in code:
 
 Implemented and active:
 1. `components/ingest.py`, `components/preprocess.py`
-2. `pipeline/stage_01`, `stage_02`, `stage_03`, `stage_04b`, `stage_04c`
-3. `training/train_single.py`, `training/train_patch_mil_single.py`, `training/train_patch_mil_multi.py`
+2. `pipeline/stage_01`, `stage_02`, `stage_03`, `stage_04b`
+3. `training/train_single.py`, `training/train_patch_mil_single.py`
 4. `models/attention_mil.py`
+
+Experimental or incomplete:
+1. `pipeline/stage_04c` and `training/train_patch_mil_multi.py` (path/artifact stability issues).
+2. Patch MIL single test-report export is not complete yet.
 
 Currently placeholders or empty modules:
 1. `src/chicken_disease/pipeline/stage_04_train_multi.py`
 2. `src/chicken_disease/pipeline/stage_05_evaluate.py`
 3. `src/chicken_disease/training/train_multi.py`
 4. Multiple files in `evaluation/`, `explainability/`, and app entrypoints
+
+## Next Steps
+
+1. Export a formal MIL single test report (`test_acc`, macro-F1, per-class metrics) to `reports/`.
+2. Fix multi-image path stability so generated metadata does not reference stale/interim paths.
+3. Add robustness checks (blur/brightness) and probability calibration reporting (ECE).
+4. Remove hard-coded inference paths and switch fully to config/CLI arguments.
+5. Add minimal Streamlit/Flask endpoints for inference, or remove placeholder app directories.
 
 ## Project Structure
 
