@@ -4,13 +4,15 @@ from pathlib import Path
 
 # Set up paths
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
-sys.path.append(str(PROJECT_ROOT / "src"))
+sys.path.insert(0, str(PROJECT_ROOT / "src"))
 os.chdir(PROJECT_ROOT)
 
-from chicken_disease.training.train_single import train_single
+from chicken_disease.training.train_patch_mil_single import train_patch_mil_single
+
 
 def main():
-    train_single()
+    train_patch_mil_single()
+
 
 if __name__ == "__main__":
     main()

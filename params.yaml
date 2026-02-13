@@ -1,0 +1,22 @@
+train_single:
+  model_name: efficientnet_b0
+  image_size: 224
+  batch_size: 64
+  lr: 0.0003
+  weight_decay: 0.0001
+  epochs: 100
+  num_workers: 4
+  seed: 42
+
+patch_mil:
+  patch_size: 224
+  stride: 112
+  max_patches_per_image: 32
+  model_name: efficientnet_b3
+  batch_size: 4
+  lr: 0.0003
+  weight_decay: 0.0001
+  epochs: 100
+  patience: 20
+  seed: 42
+  mc_dropout_passes: 20

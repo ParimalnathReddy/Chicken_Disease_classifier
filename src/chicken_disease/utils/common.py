@@ -1,14 +1,13 @@
 import os
 import box.exceptions
 import yaml
-import Chicken_Disease_classifier
+from chicken_disease.constants import * 
+import chicken_disease
 import json
 import joblib
 from ensure import ensure_annotations
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
-
-from src.Chicken_Disease_classifier.constants import * 
 
 @ensure_annotations
 def read_yaml(path_to_yaml: Path) -> Dict[str, Any]:
